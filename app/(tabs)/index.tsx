@@ -1,9 +1,11 @@
 import { activateKeepAwake, deactivateKeepAwake } from "expo-keep-awake";
 import { useRouter } from "expo-router";
-import { StatusBar } from "expo-status-bar"; // control phone status bar appearance
+import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+import NotesCarousel from "../../components/NotesCarousel";
 
 export default function Index() {
   const router = useRouter();
@@ -13,131 +15,125 @@ export default function Index() {
     return () => {
       deactivateKeepAwake();
     };
-  });
+  }, []);
+
+  // 🔥 Local images (best practice for static assets)
+  const images = [
+    require("../../assets/images/note1.jpg"),
+    require("../../assets/images/note2.jpg"),
+    require("../../assets/images/note3.jpg"),
+  ];
 
   return (
-    <SafeAreaView style={style.safeArea}>
-      <StatusBar
-        style="dark"
-        backgroundColor={style.safeArea.backgroundColor}
-      />
-      <View>
-        <Text style={style.HeadTitle}>Notes</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar style="dark" backgroundColor="#F9FAFB" />
+
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headTitle}>Notes</Text>
       </View>
-      <View style={style.container}>
-        {/* Big Box */}
-        <View style={style.bigBox}>
-          <Text style={style.bigBoxText}>BIG BOX</Text>
+
+      {/* Content */}
+      <View style={styles.container}>
+        {/* Carousel */}
+        <NotesCarousel data={images} />
+
+        <View style={{ height: 24 }} />
+
+        {/* Bottom Cards */}
+        <View style={styles.row}>
+          <TouchableOpacity style={styles.smallCard}>
+            <Text style={styles.cardTitle}>Recent Notes</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.smallCard}>
+            <Text style={styles.cardTitle}>Favorites</Text>
+          </TouchableOpacity>
         </View>
-
-        {/* Gap */}
-        <View style={{ height: 20 }} />
-
-        {/* Row with two boxes */}
-        <View style={style.row}>
-          <View style={style.box}>
-            <Text style={style.boxText}>Recent notes</Text>
-          </View>
-          <View style={style.box}>
-            <Text style={style.boxText}>Box 2</Text>
-          </View>
-        </View>
-
-        {/* Floating FAB */}
-        <TouchableOpacity
-          style={style.fab}
-          onPress={() => router.push("/add-note")}
-        >
-          <Text style={style.fabText}>+</Text>
-        </TouchableOpacity>
       </View>
+
+      {/* Floating Action Button */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => router.push("/add-note")}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.fabText}>+</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
 
-const style = StyleSheet.create({
+const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F9FAFB", // light neutral background
+    backgroundColor: "#F9FAFB",
+  },
+
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+  },
+
+  headTitle: {
+    fontSize: 42,
+    fontWeight: "800",
+    color: "#111827",
   },
 
   container: {
     flex: 1,
-    alignItems: "center",
-    padding: 20,
-  },
-
-  bigBox: {
-    width: "100%",
-    height: 200,
-    backgroundColor: "#b4b2ee", // card-like white
-    borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-
-  bigBoxText: {
-    fontSize: 22,
-    fontWeight: "600",
-    color: "#111827", // dark text
+    paddingHorizontal: 20,
+    paddingTop: 10,
   },
 
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
-    width: "100%",
   },
 
-  box: {
+  smallCard: {
     flex: 1,
     height: 120,
-    marginHorizontal: 5,
-    backgroundColor: "#c1fce8", // light card
-    borderRadius: 14,
+    marginHorizontal: 6,
+    backgroundColor: "#ffffff",
+    borderRadius: 18,
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
-    shadowRadius: 1.5,
-    elevation: 1,
+    shadowRadius: 6,
+    elevation: 4,
   },
 
-  boxText: {
-    fontSize: 18,
-    fontWeight: "500",
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: "600",
     color: "#111827",
   },
 
   fab: {
     position: "absolute",
     bottom: 30,
-    right: 30,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: "#8B5CF6", // violet accent
+    right: 25,
+    width: 65,
+    height: 65,
+    borderRadius: 32.5,
+    backgroundColor: "#8B5CF6",
     justifyContent: "center",
     alignItems: "center",
-    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 10,
   },
 
   fabText: {
     color: "#fff",
-    fontSize: 30,
+    fontSize: 32,
+    fontWeight: "600",
     marginTop: -2,
-  },
-
-  HeadTitle: {
-    fontSize: 50,
-    fontWeight: "900",
-    fontFamily: "Poppins_400Regular",
-    color: "#232831",
-    marginLeft: 15,
   },
 });

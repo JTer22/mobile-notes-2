@@ -8,8 +8,14 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
 } from "react-native";
+
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+} from "react-native-reanimated";
+
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { useNotes } from "../src/_context/NotesContext";
 
 const COLORS = ["#b98b8b", "#8bb9b9", "#b98bb9", "#8b8bb9", "#b9b98b"];
@@ -43,8 +49,10 @@ export default function AddNote() {
 
   const handleSave = async () => {
     if (!title && !content) return;
+
     if (isEdit) await updateNote(noteId as string, title, content, color);
     else await addNote(title, content, color);
+
     router.back();
   };
 
@@ -58,8 +66,31 @@ export default function AddNote() {
         { text: "Discard", style: "destructive", onPress: () => router.back() },
         { text: "Save", onPress: async () => await handleSave() },
       ]);
-    } else router.back();
+    } else {
+      router.back();
+    }
   };
+
+  // 🔥 Reanimated shared value
+  const translateY = useSharedValue(0);
+
+  // 🔥 Modern gesture API
+  const panGesture = Gesture.Pan().onUpdate((event) => {
+    const MIN_Y = -250;
+    const MAX_Y = 250;
+
+    const next = event.translationY;
+
+    if (next >= MIN_Y && next <= MAX_Y) {
+      translateY.value = next;
+    }
+  });
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateY: translateY.value }],
+    };
+  });
 
   return (
     <>
@@ -92,6 +123,7 @@ export default function AddNote() {
           onChangeText={setTitle}
           style={styles.title}
         />
+
         <TextInput
           placeholder="Start writing..."
           placeholderTextColor="#aaa"
@@ -101,19 +133,21 @@ export default function AddNote() {
           style={styles.content}
         />
 
-        <View style={styles.colorContainer}>
-          {COLORS.map((c) => (
-            <TouchableOpacity
-              key={c}
-              style={[
-                styles.colorCircle,
-                { backgroundColor: c },
-                c === color ? styles.selectedColor : {},
-              ]}
-              onPress={() => setColor(c)}
-            />
-          ))}
-        </View>
+        <GestureDetector gesture={panGesture}>
+          <Animated.View style={[styles.colorContainer, animatedStyle]}>
+            {COLORS.map((item) => (
+              <TouchableOpacity
+                key={item}
+                onPress={() => setColor(item)}
+                style={[
+                  styles.colorCircle,
+                  { backgroundColor: item },
+                  color === item && styles.selectedColor,
+                ]}
+              />
+            ))}
+          </Animated.View>
+        </GestureDetector>
       </KeyboardAvoidingView>
     </>
   );
@@ -126,7 +160,12 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     backgroundColor: "#fff",
   },
-  title: { fontSize: 32, fontWeight: "700", color: "#111", marginBottom: 20 },
+  title: {
+    fontSize: 32,
+    fontWeight: "700",
+    color: "#111",
+    marginBottom: 20,
+  },
   content: {
     flex: 1,
     fontSize: 18,
@@ -134,17 +173,28 @@ const styles = StyleSheet.create({
     color: "#222",
     textAlignVertical: "top",
   },
-  headerButton: { paddingHorizontal: 16, paddingVertical: 6, borderRadius: 8 },
-  headerText: { fontSize: 16, fontWeight: "600", color: "#555" },
-  saveText: { color: "#007AFF" },
+  headerButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  headerText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#555",
+  },
+  saveText: {
+    color: "#007AFF",
+  },
   colorContainer: {
     position: "absolute",
-    bottom: 70,
-    left: 40,
-    right: 40,
-    flexDirection: "row",
+    top: "30%",
+    right: 20,
+    flexDirection: "column",
     justifyContent: "space-around",
-    padding: 15,
+    alignItems: "center",
+    paddingVertical: 15,
+    paddingHorizontal: 10,
     backgroundColor: "#fff",
     borderRadius: 30,
     shadowColor: "#000",
@@ -159,6 +209,10 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 2,
     borderColor: "transparent",
+    marginVertical: 5,
   },
-  selectedColor: { borderColor: "#000", borderWidth: 2 },
+  selectedColor: {
+    borderColor: "#000",
+    borderWidth: 2,
+  },
 });
