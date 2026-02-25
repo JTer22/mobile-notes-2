@@ -8,15 +8,18 @@ const TabsLayout = () => {
     <Tabs
       screenOptions={{
         tabBarStyle: {
-          backgroundColor: "#FFFFFF",
-          borderTopWidth: 1,
-          borderTopColor: "#E5E7EB",
-          height: 90,
+          backgroundColor: "#000000",
+          borderTopWidth: 0,
+
+          height: 100,
           paddingBottom: 20,
           paddingTop: 2,
+          borderTopLeftRadius: 40,
+          borderTopRightRadius: 40,
+          overflow: "hidden",
         },
-        tabBarActiveTintColor: "#8B5CF6", // violet active icon
-        tabBarInactiveTintColor: "#6B7280",
+        tabBarActiveTintColor: "#8B5CF6",
+        tabBarInactiveTintColor: "#dcdee2",
         headerShown: false,
       }}
     >
