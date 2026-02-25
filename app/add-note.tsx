@@ -10,9 +10,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useNotes } from "./context/NotesContext";
+import { useNotes } from "../src/_context/NotesContext";
 
-// Define some colors to choose from
 const COLORS = ["#b98b8b", "#8bb9b9", "#b98bb9", "#8b8bb9", "#b9b98b"];
 
 export default function AddNote() {
@@ -26,11 +25,10 @@ export default function AddNote() {
     title: string;
     content: string;
   } | null>(null);
-  const [color, setColor] = useState<string>("#b98b8b");
+  const [color, setColor] = useState("#b98b8b");
 
   const isEdit = !!noteId;
 
-  // Load note in edit mode
   useEffect(() => {
     if (isEdit) {
       const note = notes.find((n) => n.id === noteId);
@@ -38,15 +36,15 @@ export default function AddNote() {
         setTitle(note.title);
         setContent(note.content);
         setOriginalNote({ title: note.title, content: note.content });
-        setColor(note.color ?? "#b98b8b"); // ✅ use note.color or default to #b98b8b
+        setColor(note.color ?? "#b98b8b");
       }
     }
   }, [noteId, notes]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title && !content) return;
-    if (isEdit) updateNote(noteId as string, title, content, color);
-    else addNote(title, content, color);
+    if (isEdit) await updateNote(noteId as string, title, content, color);
+    else await addNote(title, content, color);
     router.back();
   };
 
@@ -58,7 +56,7 @@ export default function AddNote() {
       Alert.alert("Discard changes?", "You have unsaved changes.", [
         { text: "Cancel", style: "cancel" },
         { text: "Discard", style: "destructive", onPress: () => router.back() },
-        { text: "Save", onPress: handleSave },
+        { text: "Save", onPress: async () => await handleSave() },
       ]);
     } else router.back();
   };
@@ -87,7 +85,6 @@ export default function AddNote() {
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        {/* Title Input */}
         <TextInput
           placeholder="Title"
           placeholderTextColor="#999"
@@ -95,8 +92,6 @@ export default function AddNote() {
           onChangeText={setTitle}
           style={styles.title}
         />
-
-        {/* Content Input */}
         <TextInput
           placeholder="Start writing..."
           placeholderTextColor="#aaa"
@@ -106,7 +101,6 @@ export default function AddNote() {
           style={styles.content}
         />
 
-        {/* Color Picker */}
         <View style={styles.colorContainer}>
           {COLORS.map((c) => (
             <TouchableOpacity
@@ -132,14 +126,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     backgroundColor: "#fff",
   },
-
-  title: {
-    fontSize: 32,
-    fontWeight: "700",
-    color: "#111",
-    marginBottom: 20,
-  },
-
+  title: { fontSize: 32, fontWeight: "700", color: "#111", marginBottom: 20 },
   content: {
     flex: 1,
     fontSize: 18,
@@ -147,23 +134,9 @@ const styles = StyleSheet.create({
     color: "#222",
     textAlignVertical: "top",
   },
-
-  headerButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-
-  headerText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#555",
-  },
-
-  saveText: {
-    color: "#007AFF", // Modern iOS-style blue
-  },
-
+  headerButton: { paddingHorizontal: 16, paddingVertical: 6, borderRadius: 8 },
+  headerText: { fontSize: 16, fontWeight: "600", color: "#555" },
+  saveText: { color: "#007AFF" },
   colorContainer: {
     position: "absolute",
     bottom: 70,
@@ -178,9 +151,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 2 },
-    elevation: 5, // Android shadow
+    elevation: 5,
   },
-
   colorCircle: {
     width: 28,
     height: 28,
@@ -188,8 +160,5 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "transparent",
   },
-  selectedColor: {
-    borderColor: "#000",
-    borderWidth: 2,
-  },
+  selectedColor: { borderColor: "#000", borderWidth: 2 },
 });

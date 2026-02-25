@@ -1,22 +1,45 @@
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useMemo, useState } from "react";
 import {
+  Alert,
   Dimensions,
   FlatList,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useNotes } from "../context/NotesContext";
+import { useNotes } from "../../src/_context/NotesContext";
 
 const { width } = Dimensions.get("window");
 const BIG_WIDTH = width * 0.62;
 const SMALL_WIDTH = width * 0.32;
 
 const NotesList = () => {
-  const { notes } = useNotes();
+  const { notes, deleteNote } = useNotes();
   const router = useRouter();
+  const [search, setSearch] = useState("");
+
+  const filteredNotes = useMemo(() => {
+    return notes.filter(
+      (note) =>
+        note.title.toLowerCase().includes(search.toLowerCase()) ||
+        note.content.toLowerCase().includes(search.toLowerCase()),
+    );
+  }, [notes, search]);
+
+  const handleDelete = (id: string) => {
+    Alert.alert("Delete Note?", "Are you sure you want to delete this note?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => await deleteNote(id),
+      },
+    ]);
+  };
 
   const renderItem = ({ item, index }: any) => {
     const rowIndex = Math.floor(index / 2);
@@ -36,6 +59,7 @@ const NotesList = () => {
           },
         ]}
         onPress={() => router.push(`/add-note?noteId=${item.id}`)}
+        onLongPress={() => handleDelete(item.id)}
       >
         <Text style={styles.title}>{item.title}</Text>
         <Text style={styles.content}>{item.content}</Text>
@@ -45,8 +69,18 @@ const NotesList = () => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.searchContainer}>
+        <TextInput
+          placeholder="Search notes..."
+          placeholderTextColor="#999"
+          value={search}
+          onChangeText={setSearch}
+          style={styles.searchInput}
+        />
+      </View>
+
       <FlatList
-        data={notes}
+        data={filteredNotes}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         numColumns={2}
@@ -74,7 +108,6 @@ const styles = StyleSheet.create({
     height: 180,
     borderRadius: 20,
     padding: 16,
-    backgroundColor: "#b98b8b",
     shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowRadius: 10,
@@ -82,7 +115,6 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 18, fontWeight: "600", color: "#111" },
   content: { fontSize: 14, color: "#f8f8f8", marginTop: 8 },
-
   fab: {
     position: "absolute",
     bottom: 30,
@@ -90,15 +122,22 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: "#8B5CF6", // violet accent
+    backgroundColor: "#8B5CF6",
     justifyContent: "center",
     alignItems: "center",
     elevation: 8,
   },
-
-  fabText: {
-    color: "#fff",
-    fontSize: 30,
-    marginTop: -2,
+  fabText: { color: "#fff", fontSize: 30, marginTop: -2 },
+  searchContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: "#f0f0f0",
+  },
+  searchInput: {
+    height: 40,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    fontSize: 16,
   },
 });
